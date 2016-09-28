@@ -9,7 +9,26 @@ echo 'PYTHON_VERSION: '$PYTHON_VERSION
 echo 'PIP and brew installs'
 
 pip install -r requirements.txt
-brew install ffmpeg
+
+# Use the 32-bit 10.6+ built with gcc 4.2.1 set if you are running an older
+# release on hardware that lacks 64-bit support.
+BOOTSTRAP_TAR="bootstrap-trunk-i386-20160509.tar.gz"
+BOOTSTRAP_SHA="e900f05c9f3aa8e2fb7ccee370467acf95f5df21"
+
+# Download the selected bootstrap kit.
+curl -O https://pkgsrc.joyent.com/packages/Darwin/bootstrap/${BOOTSTRAP_TAR}
+
+# Verify SHA1 checksum.
+echo "${BOOTSTRAP_SHA}  ${BOOTSTRAP_TAR}" >check-shasum
+shasum -c check-shasum
+
+# Install bootstrap kit to /opt/pkg.
+sudo tar -zxpf ${BOOTSTRAP_TAR} -C /
+
+# Reload PATH/MANPATH (pkgsrc installs /etc/paths.d/10-pkgsrc for new sessions)
+eval $(/usr/libexec/path_helper)
+
+sudo pkgin -y install ffmpeg3
 ffmpeg -L
 
 echo 'Config make'
